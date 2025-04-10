@@ -6,8 +6,10 @@ import matplotlib.pyplot as plt
 import mplfinance as mpf
 from io import BytesIO
 
+
+
 # Página
-st.set_page_config(page_title="Stock Info Terminal", layout="centered")
+st.set_page_config(page_title="Emiliano Pineda Morales", layout="centered")
 
 @st.cache_data
 def get_stock_info(symbol):
@@ -90,7 +92,7 @@ def calculate_annual_volatility(history):
 
 def export_csv(data):
     csv = data.to_csv(index=False).encode('utf-8')
-    st.download_button(label="📥 Download CSV", data=csv, file_name="company_data.csv", mime="text/csv")
+    st.download_button(label="📨 Download as CSV 📨", data=csv, file_name="company_data.csv", mime="text/csv")
 
 def export_pdf(info):
     from fpdf import FPDF
@@ -109,16 +111,16 @@ def export_pdf(info):
 
     pdf_bytes = pdf.output(dest='S').encode('latin1')
     st.download_button(
-        label="📥 Download PDF",
+        label="📨 Download as PDF 📨",
         data=pdf_bytes,
         file_name="company_data.pdf",
         mime="application/pdf"
     )
 
 # Interfaz
-st.title("📈 Stock Info Terminal with Charts, Returns & Risk")
+st.markdown('<h1 style="color: blue;"> Financial Analytics Dashboard: Insights, Trends & Risks </h1>', unsafe_allow_html=True)
 
-query = st.text_input("🔍 Enter stock symbol (e.g. AAPL, MSFT, TSLA)", "").upper()
+query = st.text_input("💡 Enter stock symbol (e.g. NVDA, AMZN, META) 💡", "").upper()
 
 if query:
     stock_info = get_stock_info(query)
@@ -127,22 +129,21 @@ if query:
         st.subheader(stock_info["longName"])
 
         description = stock_info.get("longBusinessSummary", "No description available.")
-        st.markdown("*📘 Company Description:*")
+        st.markdown("*⚖ Company Description:*")
         st.write(description)
 
         col1, col2 = st.columns(2)
         with col1:
+            st.metric("Market Cap", f"${stock_info.get('marketCap', 'N/A'):,}")
             st.metric("Sector", stock_info.get("sector", "N/A"))
             st.metric("Industry", stock_info.get("industry", "N/A"))
-            st.metric("Market Cap", f"${stock_info.get('marketCap', 'N/A'):,}")
-        with col2:
             st.metric("Current Price", f"${stock_info.get('currentPrice', 'N/A')}")
             st.metric("52W Low", f"${stock_info.get('fiftyTwoWeekLow', 'N/A')}")
             st.metric("52W High", f"${stock_info.get('fiftyTwoWeekHigh', 'N/A')}")
 
         history = get_stock_history(query)
         if not history.empty:
-            st.subheader("📊 Candlestick Chart")
+            st.subheader("📆 Candlestick Chart")
             st.markdown("This chart shows 5 years of historical price movements using candlesticks.")
             plot_candlestick_chart(history, query)
 
@@ -150,24 +151,24 @@ if query:
             st.markdown("Line chart of the adjusted closing price over the last 5 years.")
             plot_adjusted_close_line_chart(history, query)
 
-            st.subheader("📉 Annualized Returns (CAGR)")
-            st.markdown("This calculation considers the price at the beginning and end of the period to determine the annualized return.")
+            st.subheader("📉 Annualized Returns ")
+            st.markdown("This calculation uses the starting and ending prices of the period to compute the annualized return. Using years 1, 3 & 5 ")
             cagr_data = calculate_cagr(history, [1, 3, 5])
             if cagr_data:
                 cagr_df = pd.DataFrame(list(cagr_data.items()), columns=["Period", "Annualized Return (%)"])
                 st.table(cagr_df)
-                st.markdown("🧠 *The annualized return was calculated using the CAGR formula.*")
+                st.markdown(" *The annualized return is determined using the Compound Annual Growth Rate (CAGR) formula*")
 
-            st.subheader("⚠️ Annual Risk (Volatility)")
-            st.markdown("Volatility is calculated from the standard deviation of daily returns and annualized by multiplying by √252.")
+            st.subheader(" ❗❗❗ Annual Risk Volatility ❗❗❗")
+            st.markdown("Volatility is derived from the standard deviation of daily returns, which is then annualized by multiplying with the square root of 252 (√252).")
             annual_vol = calculate_annual_volatility(history)
             if annual_vol is not None:
                 st.metric("Annual Volatility", f"{annual_vol}%")
-                st.markdown("🧠 *This value represents the asset's historical annual volatility, measured by the standard deviation of daily returns.*")
+                st.markdown("🧠 *This value indicates the asset's yearly volatility history, calculated using the standard deviation of daily returns.*")
 
-        st.subheader("📂 Export Data")
+        st.subheader("📂 Save your Stock")
         data_to_export = pd.DataFrame.from_dict(stock_info, orient="index", columns=["Value"]).reset_index()
         export_csv(data_to_export)
         export_pdf(stock_info)
     else:
-        st.error("❌ Incorrect symbol, please try again.")
+        st.error(" UPPPPS Incorrect symbol, please check and try again!!! 😥  ")
